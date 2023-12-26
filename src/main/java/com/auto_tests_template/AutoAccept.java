@@ -1,6 +1,8 @@
 package com.auto_tests_template;
 
 import com.codeborne.selenide.*;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.awt.*;
@@ -22,12 +24,13 @@ public class AutoAccept {
     private static final String BUILD_FILES = "build";
 
     public AutoAccept() {
-        Configuration.browserSize = "1920x1080";
-        Configuration.browser = "chrome";
-        Configuration.headless = !(System.getProperty("isHeadless") == null ? "true" : System.getProperty("isHeadless"))
-                .equals("false");
-        // Fix the issue https://github.com/SeleniumHQ/selenium/issues/11750
-        Configuration.browserCapabilities = new ChromeOptions().addArguments("--remote-allow-origins=*");
+        ChromeOptions chromeOptions = new ChromeOptions()
+                // Fix the issue https://github.com/SeleniumHQ/selenium/issues/11750
+                .addArguments("--remote-allow-origins=*")
+                .addArguments("--window-size=1920,1080")
+                .addArguments("--headless");
+        WebDriver driver = new ChromeDriver(chromeOptions);
+        WebDriverRunner.setWebDriver(driver);
     }
 
     public void autoAccept(){
