@@ -46,7 +46,7 @@ public class AutoAccept {
             } catch (InterruptedException | IOException e) {
                 throw new RuntimeException(e);
             }
-            SelenideElement ditBotChat = $x("//a[.//h3[@role='button' and text()='DITauthBot']]");
+            SelenideElement ditBotChat = $x("//a[.//h3[text()='DITauthBot']]");
             ditBotChat.shouldBe(Condition.visible, Duration.ofSeconds(60L));
             ditBotChat.click();
             SelenideElement acceptButton = $$x("//div[contains(@id, 'message')]" +
