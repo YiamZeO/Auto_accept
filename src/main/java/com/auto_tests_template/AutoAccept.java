@@ -30,8 +30,8 @@ public class AutoAccept {
         ChromeOptions chromeOptions = new ChromeOptions()
                 // Fix the issue https://github.com/SeleniumHQ/selenium/issues/11750
                 .addArguments("--remote-allow-origins=*")
-                .addArguments("--window-size=1920,1080");
-//                .addArguments("--headless");
+                .addArguments("--window-size=1920,1080")
+                .addArguments("--headless");
         WebDriver driver = new ChromeDriver(chromeOptions);
         WebDriverRunner.setWebDriver(driver);
     }
