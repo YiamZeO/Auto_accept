@@ -72,7 +72,15 @@ public class AutoAccept {
             System.out.println("---> Job started [" + LocalDateTime.now() + "]");
             int lifeCounter = 0;
             while (!hasShutdownTrigger()){
-                if (lastMessage.getOwnText().contains("Vpn bot!")) {
+                if (!lastMessage.isDisplayed()){
+                    Selenide.refresh();
+                    System.out.println("---> Refreshed [" + LocalDateTime.now() + "]");
+                    if ((!lastMessage.isDisplayed())){
+                        lifeCounter += 1;
+                        if (lifeCounter >= 10)
+                            System.out.println("---> ERROR browser sleeping [" + LocalDateTime.now() + "]");
+                    }
+                } else if (lastMessage.getOwnText().contains("Vpn bot!")) {
                     Selenide.switchTo().window(firstWindow);
                     SelenideElement acceptButton = $x("//div[contains(@id, 'message')]" +
                     "//button[./span[text()='Да это я']]");
@@ -84,15 +92,6 @@ public class AutoAccept {
                     sendButton.click();
                     System.out.println("---> Accepted [" + LocalDateTime.now() + "]");
                     lifeCounter = 0;
-                }
-                if (!lastMessage.isDisplayed()){
-                    Selenide.refresh();
-                    System.out.println("---> Refreshed [" + LocalDateTime.now() + "]");
-                    if ((!lastMessage.isDisplayed())){
-                        lifeCounter += 1;
-                        if (lifeCounter >= 10)
-                            System.out.println("---> ERROR browser sleeping [" + LocalDateTime.now() + "]");
-                    }
                 }
                 try {
                     Thread.sleep(Duration.ofSeconds(2L));
