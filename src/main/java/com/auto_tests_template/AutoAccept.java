@@ -60,8 +60,6 @@ public class AutoAccept {
             SelenideElement lastMessageWithButton = $$x("//div[contains(@id, 'message') and " +
                     ".//button[./span[text()='Да это я']]]//div[@class='content-inner']" +
                     "/div").last();
-            SelenideElement scrollButton =
-                    $x("//button[@title='Go to bottom' and ./i[contains(@class, icon-arrow-down)]]");
             System.out.println("---> Job started [" + LocalDateTime.now() + "]");
             int lifeCounter = 0;
             int acceptCounter = 0;
@@ -70,16 +68,12 @@ public class AutoAccept {
                     Selenide.refresh();
                     System.out.println("---> Refreshed [" + LocalDateTime.now() + "]");
                     acceptCounter = 0;
-                    if ((!lastMessage.isDisplayed() || !acceptButton.isDisplayed()) && (!scrollButton.isDisplayed())) {
+                    if (!lastMessage.isDisplayed() || !acceptButton.isDisplayed()) {
                         lifeCounter += 1;
                         if (lifeCounter >= 10)
                             System.out.println("---> ERROR browser sleeping [" + LocalDateTime.now() + "]");
                     }
                 } else {
-                    if (scrollButton.isDisplayed()) {
-                        scrollButton.click();
-                        lifeCounter = 0;
-                    }
                     if (lastMessage.getOwnText().equals(lastMessageWithButton.getOwnText())) {
                         if (acceptButton.isDisplayed()) {
                             acceptButton.click();
