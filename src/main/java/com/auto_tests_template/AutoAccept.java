@@ -1,12 +1,20 @@
 package com.auto_tests_template;
 
-import com.codeborne.selenide.*;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebDriverRunner;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.awt.*;
+import java.io.FileReader;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -15,10 +23,9 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
 
 import static com.codeborne.selenide.Selenide.*;
 
@@ -36,46 +43,55 @@ public class AutoAccept {
         WebDriverRunner.setWebDriver(driver);
     }
 
-    public void autoAccept(){
+    public void autoAccept() {
+        open("https://web.telegram.org/a/");
+        SelenideElement qrCode = $x("//div[@class='qr-container']");
+        qrCode.shouldBe(Condition.visible, Duration.ofSeconds(1800L));
         try {
-            open("https://web.telegram.org/a/");
-            SelenideElement qrCode = $x("//div[@class='qr-container']");
-            qrCode.shouldBe(Condition.visible, Duration.ofSeconds(1800L));
-            try {
-                Thread.sleep(Duration.ofSeconds(2L));
-                String path = URLDecoder.decode(Objects.requireNonNull(screenshot("QR_Code"))
-                        .split("file:/")[1], StandardCharsets.UTF_8);
-                Desktop.getDesktop().open(Paths.get(path).toFile());
-            } catch (InterruptedException | IOException e) {
-                throw new RuntimeException(e);
+            Thread.sleep(Duration.ofSeconds(2L));
+            String path = URLDecoder.decode(Objects.requireNonNull(screenshot("QR_Code"))
+                    .split("file:/")[1], StandardCharsets.UTF_8);
+            Desktop.getDesktop().open(Paths.get(path).toFile());
+        } catch (InterruptedException | IOException e) {
+            throw new RuntimeException(e);
+        }
+        SelenideElement ditBotChat = $x("//a[.//h3[text()='DITauthBot']]");
+        ditBotChat.shouldBe(Condition.visible, Duration.ofSeconds(60L));
+        ditBotChat.click();
+        SelenideElement lastMessage = $$x("//div[contains(@id, 'message')]" +
+                "//div[@class='content-inner']/div").last();
+        executeJavaScript("window.open(arguments[0], '_blank')", "https://web.telegram.org/a/");
+        Set<String> windowHandles = WebDriverRunner.getWebDriver().getWindowHandles();
+        Iterator<String> windowsIterator = windowHandles.iterator();
+        String firstWindow = windowsIterator.next();
+        String secondWindow = windowsIterator.next();
+        Selenide.switchTo().window(secondWindow);
+        try {
+            Gson gson = new Gson();
+            try (FileReader reader = new FileReader("chats.json")) {
+                Type type = new TypeToken<List<String>>() {
+                }.getType();
+                List<String> chatsList = gson.fromJson(reader, type);
+                chatsList.forEach(c -> {
+                    SelenideElement chat = $x("//a[.//h3[text()='" + c + "']]");
+                    chat.shouldBe(Condition.visible, Duration.ofSeconds(60L));
+                    chat.click();
+                    try {
+                    Thread.sleep(Duration.ofSeconds(1L));
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            } catch (IOException e) {
+                e.printStackTrace();
             }
-            SelenideElement ditBotChat = $x("//a[.//h3[text()='DITauthBot']]");
-            ditBotChat.shouldBe(Condition.visible, Duration.ofSeconds(60L));
-            ditBotChat.click();
-            SelenideElement lastMessage = $$x("//div[contains(@id, 'message')]" +
-                    "//div[@class='content-inner']/div").last();
-            executeJavaScript("window.open(arguments[0], '_blank')", "https://web.telegram.org/a/");
-            Set<String> windowHandles = WebDriverRunner.getWebDriver().getWindowHandles();
-            Iterator<String> windowsIterator = windowHandles.iterator();
-            String firstWindow = windowsIterator.next();
-            String secondWindow = windowsIterator.next();
-            Selenide.switchTo().window(secondWindow);
-            SelenideElement controlChat = $x("//a[.//h3[text()='Saved Messages']]");
-            controlChat.shouldBe(Condition.visible, Duration.ofSeconds(60L));
-            controlChat.click();
-//            SelenideElement eircChat = $x("//a[.//h3[text()='ЕИРЦ']]");
-//            eircChat.shouldBe(Condition.visible, Duration.ofSeconds(60L));
-//            eircChat.click();
-//            SelenideElement vpnChat = $x("//a[.//h3[text()='VPN DIT запросы']]");
-//            eircChat.shouldBe(Condition.visible, Duration.ofSeconds(60L));
-//            vpnChat.click();
             System.out.println("---> Job started [" + LocalDateTime.now() + "]");
             int lifeCounter = 0;
-            while (!hasShutdownTrigger()){
-                if (!lastMessage.isDisplayed()){
+            while (!hasShutdownTrigger()) {
+                if (!lastMessage.isDisplayed()) {
                     Selenide.refresh();
                     System.out.println("---> Refreshed [" + LocalDateTime.now() + "]");
-                    if ((!lastMessage.isDisplayed())){
+                    if ((!lastMessage.isDisplayed())) {
                         lifeCounter += 1;
                         if (lifeCounter >= 10)
                             System.out.println("---> ERROR browser sleeping [" + LocalDateTime.now() + "]");
@@ -83,7 +99,7 @@ public class AutoAccept {
                 } else if (lastMessage.getOwnText().contains("Vpn bot!")) {
                     Selenide.switchTo().window(firstWindow);
                     SelenideElement acceptButton = $x("//div[contains(@id, 'message')]" +
-                    "//button[./span[text()='Да это я']]");
+                            "//button[./span[text()='Да это я']]");
                     acceptButton.click();
                     Selenide.switchTo().window(secondWindow);
                     SelenideElement inputField = $x("//div[@id='message-input-text']/div/div/div");
