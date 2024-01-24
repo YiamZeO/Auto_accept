@@ -53,12 +53,12 @@ public class AutoAccept {
                     "//button[./span[text()='Да это я']]").last();
             acceptButton.shouldBe(Condition.visible, Duration.ofSeconds(60L));
             SelenideElement lastMessage = $$x("//div[contains(@id, 'message')]" +
-                    "//div[@class='content-inner']//div[@class='text-content clearfix with-meta']").last();
+                    "//div[@class='content-inner']/div").last();
             SelenideElement lastMessageWithButton = $$x("//div[contains(@id, 'message') and " +
                     ".//button[./span[text()='Да это я']]]//div[@class='content-inner']" +
-                    "//div[@class='text-content clearfix with-meta']" ).last();
+                    "/div" ).last();
             SelenideElement scrollButton =
-                    $x("//button[./i[@class='AafG9_xBi_2eJ_bFNnNg icon icon-arrow-down']]");
+                    $x("//button[@title='Go to bottom' and ./i[contains(@class, icon-arrow-down)]]");
             System.out.println("---> Job started [" + LocalDateTime.now() + "]");
             int lifeCounter = 0;
             int acceptCounter = 0;
