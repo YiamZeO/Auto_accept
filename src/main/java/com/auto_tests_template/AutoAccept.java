@@ -1,6 +1,10 @@
 package com.auto_tests_template;
 
-import com.codeborne.selenide.*;
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideElement;
+import com.codeborne.selenide.WebDriverRunner;
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -15,7 +19,6 @@ import java.nio.file.Paths;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Objects;
-import org.apache.commons.io.FileUtils;
 
 import static com.codeborne.selenide.Selenide.*;
 
@@ -33,7 +36,7 @@ public class AutoAccept {
         WebDriverRunner.setWebDriver(driver);
     }
 
-    public void autoAccept(){
+    public void autoAccept() {
         try {
             open("https://web.telegram.org/a/");
             SelenideElement qrCode = $x("//div[@class='qr-container']");
@@ -56,36 +59,36 @@ public class AutoAccept {
                     "//div[@class='content-inner']/div").last();
             SelenideElement lastMessageWithButton = $$x("//div[contains(@id, 'message') and " +
                     ".//button[./span[text()='Да это я']]]//div[@class='content-inner']" +
-                    "/div" ).last();
+                    "/div").last();
             SelenideElement scrollButton =
                     $x("//button[@title='Go to bottom' and ./i[contains(@class, icon-arrow-down)]]");
             System.out.println("---> Job started [" + LocalDateTime.now() + "]");
             int lifeCounter = 0;
             int acceptCounter = 0;
-            while (!hasShutdownTrigger()){
-                if (scrollButton.isDisplayed()){
-                    scrollButton.click();
-                    lifeCounter = 0;
-                }
-                if (lastMessage.getOwnText().equals(lastMessageWithButton.getOwnText())){
-                    if(acceptButton.isDisplayed()) {
-                        acceptButton.click();
-                        System.out.println("---> Accepted [" + LocalDateTime.now() + "]");
-                        lifeCounter = 0;
-                        acceptCounter += 1;
-                    }
-                }
-                else{
-                    acceptCounter = 0;
-                }
-                if (!lastMessage.isDisplayed() || !acceptButton.isDisplayed() || acceptCounter >= 10){
+            while (!hasShutdownTrigger()) {
+                if (!lastMessage.isDisplayed() || !acceptButton.isDisplayed() || acceptCounter >= 10) {
                     Selenide.refresh();
                     System.out.println("---> Refreshed [" + LocalDateTime.now() + "]");
                     acceptCounter = 0;
-                    if ((!lastMessage.isDisplayed() || !acceptButton.isDisplayed()) && (!scrollButton.isDisplayed())){
+                    if ((!lastMessage.isDisplayed() || !acceptButton.isDisplayed()) && (!scrollButton.isDisplayed())) {
                         lifeCounter += 1;
                         if (lifeCounter >= 10)
                             System.out.println("---> ERROR browser sleeping [" + LocalDateTime.now() + "]");
+                    }
+                } else {
+                    if (scrollButton.isDisplayed()) {
+                        scrollButton.click();
+                        lifeCounter = 0;
+                    }
+                    if (lastMessage.getOwnText().equals(lastMessageWithButton.getOwnText())) {
+                        if (acceptButton.isDisplayed()) {
+                            acceptButton.click();
+                            System.out.println("---> Accepted [" + LocalDateTime.now() + "]");
+                            lifeCounter = 0;
+                            acceptCounter += 1;
+                        }
+                    } else {
+                        acceptCounter = 0;
                     }
                 }
                 try {
